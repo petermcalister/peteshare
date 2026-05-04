@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Agentic Harness as the Product, Not the Overhead — Peter Mc Alister</title>
+<meta name="description" content="Where engineering leverage moved when AI started writing the code. A practitioner essay on the harness around AI coding agents.">
+<meta property="og:title" content="The Agentic Harness as the Product, Not the Overhead">
+<meta property="og:description" content="Where engineering leverage moved when AI started writing the code.">
+<meta property="og:type" content="article">
+<meta property="og:image" content="assets/hook-architecture.png">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root, [data-theme="dark"] {
+  --bg-deep: #0a0b0f;
+  --bg-card: #12131a;
+  --bg-card-hover: #191b24;
+  --bg-elevated: #1a1c27;
+  --surface: #222436;
+  --border: #2a2d3e;
+  --border-glow: #3d4167;
+  --text-primary: #e4e6f0;
+  --text-secondary: #a5aac4;
+  --text-muted: #6d7394;
+  --accent-blue: #5b8af5;
+  --accent-cyan: #4cd4c0;
+  --accent-amber: #f0a85e;
+  --accent-rose: #e86b8a;
+  --accent-violet: #9b7cf5;
+  --accent-lime: #9ed65c;
+  --gradient-hero: linear-gradient(135deg, #5b8af5 0%, #9b7cf5 45%, #e86b8a 100%);
+  --gradient-blue: linear-gradient(135deg, #5b8af5, #4cd4c0);
+  --gradient-warm: linear-gradient(135deg, #f0a85e, #e86b8a);
+  --gradient-cool: linear-gradient(135deg, #9b7cf5, #5b8af5);
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-body: 'DM Sans', -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --noise-opacity: 0.022;
+  --hero-orb-opacity: 0.9;
+  --nav-bg: rgba(10, 11, 15, 0.88);
+  --cta-text: #091016;
+  --shadow-hover: rgba(0, 0, 0, 0.3);
+  --callout-wash: rgba(91,138,245,0.06);
+}
+[data-theme="light"] {
+  --bg-deep: #f4f5f8;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f0f1f5;
+  --bg-elevated: #e8e9f0;
+  --surface: #e2e4ec;
+  --border: #d0d3de;
+  --border-glow: #b8bcd0;
+  --text-primary: #1a1c27;
+  --text-secondary: #4a4e6a;
+  --text-muted: #7c809a;
+  --accent-blue: #4a78e0;
+  --accent-cyan: #2fb8a4;
+  --accent-amber: #d99040;
+  --accent-rose: #d4567a;
+  --accent-violet: #8568e0;
+  --accent-lime: #72a840;
+  --noise-opacity: 0.012;
+  --hero-orb-opacity: 0.5;
+  --nav-bg: rgba(244, 245, 248, 0.92);
+  --cta-text: #ffffff;
+  --shadow-hover: rgba(0, 0, 0, 0.08);
+  --callout-wash: rgba(74,120,224,0.04);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; font-size: 16px; }
+body {
+  background: var(--bg-deep);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  position: relative;
+  transition: background 0.4s ease, color 0.4s ease;
+}
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  opacity: var(--noise-opacity);
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+}
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-deep); }
+::-webkit-scrollbar-thumb { background: var(--border-glow); border-radius: 3px; }
+
+nav.topnav {
+  position: fixed; top: 0; left: 0; right: 0;
+  background: var(--nav-bg); backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  z-index: 100; transition: all 0.3s ease;
+}
+nav.topnav .nav-inner {
+  max-width: 1200px; margin: 0 auto;
+  padding: 0.9rem 2rem;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 2rem;
+}
+nav.topnav .nav-brand {
+  font-family: var(--font-mono); font-size: 0.72rem;
+  letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--text-secondary); white-space: nowrap;
+}
+nav.topnav .nav-brand strong { color: var(--accent-cyan); font-weight: 500; }
+nav.topnav .nav-links {
+  display: flex; gap: 1.6rem; list-style: none;
+  font-family: var(--font-mono); font-size: 0.7rem;
+  letter-spacing: 0.14em; text-transform: uppercase;
+}
+nav.topnav .nav-links a {
+  color: var(--text-muted); text-decoration: none;
+  transition: color 0.2s ease;
+}
+nav.topnav .nav-links a:hover { color: var(--accent-cyan); }
+@media (max-width: 820px) {
+  nav.topnav .nav-links { display: none; }
+}
+
+.theme-toggle {
+  position: fixed; top: 1.2rem; right: 1.2rem;
+  z-index: 200;
+  width: 40px; height: 40px; border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--bg-card); color: var(--text-primary);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem;
+  transition: border-color 0.3s, background 0.3s, transform 0.3s;
+  backdrop-filter: blur(8px);
+}
+.theme-toggle:hover {
+  border-color: var(--border-glow); transform: scale(1.1);
+}
+
+.page { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 0 2rem; }
+
+.hero {
+  min-height: 92vh;
+  display: flex; flex-direction: column; justify-content: center;
+  position: relative;
+  padding: 8rem 0 4rem 0;
+}
+.hero::before, .hero::after {
+  content: ''; position: absolute; border-radius: 50%;
+  filter: blur(110px); opacity: var(--hero-orb-opacity); z-index: -1; pointer-events: none;
+  transition: opacity 0.4s ease;
+}
+.hero::before {
+  background: radial-gradient(circle, rgba(91,138,245,0.18), transparent 70%);
+  width: 480px; height: 480px; top: 8%; left: -10%;
+}
+.hero::after {
+  background: radial-gradient(circle, rgba(155,124,245,0.15), transparent 70%);
+  width: 540px; height: 540px; bottom: 0%; right: -15%;
+}
+.hero .grid-overlay {
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(to right, rgba(91,138,245,0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(91,138,245,0.04) 1px, transparent 1px);
+  background-size: 64px 64px;
+  pointer-events: none; z-index: -1;
+  mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
+  -webkit-mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
+}
+.badge {
+  display: inline-flex; align-items: center; gap: 0.6rem;
+  font-family: var(--font-mono); font-size: 0.72rem;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--accent-cyan); padding: 0.5rem 1rem;
+  border: 1px solid var(--border); border-radius: 999px;
+  background: var(--bg-card); width: fit-content; margin-bottom: 2rem;
+}
+.badge .dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--accent-cyan);
+  box-shadow: 0 0 12px var(--accent-cyan);
+  animation: pulseGlow 2s ease-in-out infinite;
+}
+@keyframes pulseGlow {
+  0%, 100% { opacity: 0.6; transform: scale(0.95); }
+  50% { opacity: 1; transform: scale(1.1); }
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(40px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+h1 {
+  font-family: var(--font-display); font-weight: 900;
+  font-size: clamp(2.8rem, 6vw, 5rem);
+  letter-spacing: -0.02em; line-height: 1.05;
+  color: var(--text-primary); margin-bottom: 1.6rem; max-width: 18ch;
+}
+.gradient-text {
+  background: var(--gradient-hero);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.hero p.lead {
+  font-family: var(--font-body); font-weight: 300;
+  font-size: clamp(1.1rem, 1.6vw, 1.4rem); color: var(--text-secondary);
+  max-width: 720px; margin-bottom: 2.5rem; line-height: 1.55;
+}
+.byline {
+  font-family: var(--font-mono); font-size: 0.78rem;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--text-muted); margin-bottom: 3rem;
+}
+.byline strong { color: var(--text-secondary); font-weight: 500; }
+.hero-stats {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: clamp(0.8rem, 2vw, 2rem); max-width: 100%;
+}
+.hero-stats > div { min-width: 0; }
+.hero-stats .stat-num {
+  font-family: var(--font-display); font-weight: 900;
+  font-size: clamp(1.4rem, 4.2vw, 2.4rem); line-height: 1;
+  background: var(--gradient-blue);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  letter-spacing: -0.02em; display: block; margin-bottom: 0.4rem;
+  white-space: nowrap;
+}
+.hero-stats .stat-label {
+  font-family: var(--font-mono); font-size: clamp(0.6rem, 1.4vw, 0.7rem);
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+section.chapter { padding: 5rem 0; position: relative; }
+
+.section-label {
+  display: flex; align-items: center; gap: 0.7rem;
+  font-family: var(--font-mono); font-size: 0.72rem;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--accent-blue); margin-bottom: 1.4rem;
+}
+.section-label::before {
+  content: ''; width: 28px; height: 1px; background: var(--accent-blue);
+}
+.section-label.cyan { color: var(--accent-cyan); }
+.section-label.cyan::before { background: var(--accent-cyan); }
+.section-label.amber { color: var(--accent-amber); }
+.section-label.amber::before { background: var(--accent-amber); }
+.section-label.violet { color: var(--accent-violet); }
+.section-label.violet::before { background: var(--accent-violet); }
+.section-label.rose { color: var(--accent-rose); }
+.section-label.rose::before { background: var(--accent-rose); }
+.section-label.lime { color: var(--accent-lime); }
+.section-label.lime::before { background: var(--accent-lime); }
+
+h2 {
+  font-family: var(--font-display); font-weight: 700;
+  font-size: clamp(2rem, 4vw, 3rem);
+  letter-spacing: -0.02em; line-height: 1.1;
+  color: var(--text-primary); margin-bottom: 2rem; max-width: 24ch;
+}
+h3 {
+  font-family: var(--font-display); font-weight: 700;
+  font-size: clamp(1.35rem, 2.5vw, 1.7rem);
+  color: var(--text-primary); margin: 2rem 0 1rem 0;
+}
+h4 {
+  font-family: var(--font-display); font-weight: 700;
+  font-size: 1.25rem; color: var(--text-primary); margin: 1.4rem 0 0.6rem 0;
+}
+p {
+  font-size: 1.08rem; line-height: 1.75;
+  color: var(--text-secondary); max-width: 70ch;
+  margin-bottom: 1.4rem;
+}
+p strong { color: var(--text-primary); font-weight: 500; }
+p em { color: var(--text-primary); font-style: italic; }
+a { color: var(--accent-cyan); text-decoration: none; border-bottom: 1px solid rgba(76,212,192,0.3); transition: border-color 0.2s ease, color 0.2s ease; }
+a:hover { border-bottom-color: var(--accent-cyan); }
+
+code {
+  font-family: var(--font-mono); font-size: 0.88em;
+  background: rgba(155,124,245,0.10); color: var(--accent-violet);
+  padding: 0.15rem 0.45rem; border-radius: 4px;
+}
+[data-theme="light"] code { background: rgba(133,104,224,0.10); }
+pre {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 1.4rem 1.6rem;
+  overflow-x: auto; margin: 1.6rem 0; position: relative;
+}
+[data-theme="light"] pre { background: var(--bg-elevated); }
+pre::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0;
+  height: 2px; background: var(--gradient-blue);
+}
+pre code {
+  background: transparent; color: var(--text-primary); padding: 0;
+  font-size: 0.92rem; line-height: 1.6; white-space: pre;
+}
+
+blockquote {
+  font-family: var(--font-display); font-weight: 400; font-style: italic;
+  font-size: clamp(1.25rem, 2.2vw, 1.55rem); line-height: 1.45;
+  color: var(--text-primary);
+  border-left: 3px solid var(--accent-cyan);
+  padding: 1.2rem 0 1.2rem 2rem; margin: 2.4rem 0;
+  max-width: 60ch;
+}
+
+.card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 16px; padding: 1.8rem; position: relative; overflow: hidden;
+  margin: 2rem 0;
+}
+.card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0;
+  height: 2px; background: var(--gradient-hero);
+}
+.card.cool::before { background: var(--gradient-cool); }
+.card.warm::before { background: var(--gradient-warm); }
+
+.callout {
+  background: linear-gradient(180deg, var(--callout-wash), var(--bg-card));
+  border: 1px solid var(--border); border-radius: 16px;
+  padding: 2rem 2.2rem; position: relative; overflow: hidden;
+  margin: 2.4rem 0;
+}
+.callout::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0;
+  height: 2px; background: var(--gradient-hero);
+}
+.callout .small-label {
+  font-family: var(--font-mono); font-size: 0.7rem;
+  letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--accent-cyan); margin-bottom: 0.8rem;
+}
+.callout p { color: var(--text-primary); font-size: 1.15rem; max-width: none; margin: 0; }
+.callout p strong { color: var(--accent-cyan); }
+
+.tile-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem; margin: 1.6rem 0 2rem 0;
+}
+.tile {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 14px; padding: 1.4rem 1.5rem;
+  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+.tile:hover {
+  border-color: var(--border-glow); transform: translateY(-2px);
+  box-shadow: 0 20px 50px var(--shadow-hover);
+}
+.tile h4 {
+  font-family: var(--font-display); font-weight: 700;
+  font-size: 1.1rem; color: var(--text-primary); margin: 0 0 0.4rem 0;
+}
+.tile p { font-size: 0.92rem; color: var(--text-secondary); margin: 0; }
+
+.metric-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem; margin: 2rem 0;
+}
+.metric {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 14px; padding: 1.4rem; text-align: left;
+  position: relative; overflow: hidden;
+}
+.metric::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0;
+  height: 2px; background: var(--gradient-blue);
+}
+.metric .m-label {
+  font-family: var(--font-mono); font-size: 0.65rem;
+  letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--text-muted); margin-bottom: 0.6rem;
+}
+.metric .m-value {
+  font-family: var(--font-display); font-weight: 900;
+  font-size: 2.2rem; color: var(--accent-cyan); line-height: 1;
+  margin-bottom: 0.5rem; letter-spacing: -0.02em;
+}
+.metric .m-desc {
+  font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5;
+}
+
+table {
+  width: 100%; border-collapse: separate; border-spacing: 0;
+  border: 1px solid var(--border); border-radius: 16px; overflow: hidden;
+  margin: 2rem 0; font-size: 0.95rem;
+}
+th {
+  background: var(--surface); color: var(--text-muted);
+  font-family: var(--font-mono); font-size: 0.7rem;
+  letter-spacing: 0.12em; text-transform: uppercase; font-weight: 500;
+  padding: 1rem 1.2rem; text-align: left; border-bottom: 1px solid var(--border);
+}
+td {
+  background: var(--bg-card); color: var(--text-secondary);
+  border-top: 1px solid var(--border); padding: 1rem 1.2rem;
+  vertical-align: top;
+}
+td:first-child { color: var(--text-primary); font-weight: 500; }
+tr:first-child td { border-top: none; }
+table.numeric td:nth-child(2),
+table.numeric td:nth-child(3),
+table.numeric td:nth-child(4) {
+  font-family: var(--font-mono); color: var(--accent-cyan);
+}
+
+.tag {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  font-family: var(--font-mono); font-size: 0.68rem;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  padding: 0.35em 0.9em; border-radius: 999px;
+  border: 1px solid;
+}
+.tag.cyan { background: rgba(76,212,192,0.06); color: var(--accent-cyan); border-color: rgba(76,212,192,0.25); }
+.tag.amber { background: rgba(240,168,94,0.06); color: var(--accent-amber); border-color: rgba(240,168,94,0.25); }
+.tag.rose { background: rgba(232,107,138,0.06); color: var(--accent-rose); border-color: rgba(232,107,138,0.25); }
+.tag.violet { background: rgba(155,124,245,0.06); color: var(--accent-violet); border-color: rgba(155,124,245,0.25); }
+.tag-row { display: flex; flex-wrap: wrap; gap: 0.6rem; margin: 1.2rem 0; }
+
+ul.takeaways { list-style: none; margin: 2rem 0; padding: 0; }
+ul.takeaways li {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 14px; padding: 1.5rem 1.7rem; margin-bottom: 1rem;
+  position: relative; overflow: hidden;
+  transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+}
+ul.takeaways li:hover {
+  border-color: var(--border-glow); transform: translateY(-2px);
+  box-shadow: 0 20px 50px var(--shadow-hover);
+}
+ul.takeaways li::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0;
+  height: 2px; background: var(--gradient-blue);
+}
+ul.takeaways li:nth-child(2)::before { background: var(--gradient-warm); }
+ul.takeaways li:nth-child(3)::before { background: var(--gradient-cool); }
+ul.takeaways li:nth-child(4)::before { background: linear-gradient(135deg, #4cd4c0, #f0a85e); }
+ul.takeaways li:nth-child(5)::before { background: var(--gradient-hero); }
+ul.takeaways li:nth-child(6)::before { background: linear-gradient(135deg, #9ed65c, #4cd4c0); }
+ul.takeaways .t-title {
+  font-family: var(--font-display); font-weight: 700; font-size: 1.15rem;
+  color: var(--text-primary); margin-bottom: 0.4rem;
+}
+ul.takeaways .t-body {
+  font-size: 1rem; color: var(--text-secondary); line-height: 1.65;
+}
+
+figure { margin: 2.4rem 0; text-align: center; }
+figure img {
+  max-width: 100%; height: auto;
+  border: 1px solid var(--border); border-radius: 14px;
+  background: var(--bg-card); padding: 1rem;
+}
+figcaption {
+  font-family: var(--font-mono); font-size: 0.72rem;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--text-muted); margin-top: 0.8rem;
+}
+
+.mermaid-wrap {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 16px; padding: 1.8rem; margin: 2rem 0;
+  position: relative; overflow: hidden;
+}
+.mermaid-wrap::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0;
+  height: 2px; background: var(--gradient-cool);
+}
+.mermaid { display: flex; justify-content: center; }
+.mermaid svg { max-width: 100% !important; }
+
+footer.page-footer {
+  border-top: 1px solid var(--border);
+  padding: 4rem 0 5rem 0; margin-top: 5rem;
+  text-align: left;
+}
+footer.page-footer .name {
+  font-family: var(--font-display); font-weight: 700; font-size: 1.6rem;
+  color: var(--text-primary); margin-bottom: 0.6rem;
+}
+footer.page-footer .role {
+  font-family: var(--font-mono); font-size: 0.78rem;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--text-muted); margin-bottom: 1.6rem;
+}
+footer.page-footer .contact {
+  font-size: 1rem; color: var(--text-secondary); margin-bottom: 0.4rem;
+}
+
+hr.sep {
+  border: none; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border-glow), transparent);
+  margin: 3rem 0; max-width: 600px; margin-left: auto; margin-right: auto;
+}
+
+.reveal { opacity: 0; transform: translateY(40px); transition: opacity 0.8s ease, transform 0.8s ease; }
+.reveal.visible { opacity: 1; transform: translateY(0); }
+.reveal-delay-1.visible { transition-delay: 0.1s; }
+.reveal-delay-2.visible { transition-delay: 0.2s; }
+.reveal-delay-3.visible { transition-delay: 0.3s; }
+
+@media (max-width: 720px) {
+  .page { padding: 0 1.2rem; }
+  .hero { padding: 6rem 0 3rem 0; min-height: auto; }
+  section.chapter { padding: 3rem 0; }
+  .hero-stats { gap: 0.6rem; }
+  blockquote { font-size: 1.2rem; padding-left: 1.4rem; }
+  .callout { padding: 1.4rem 1.5rem; }
+  nav.topnav .nav-inner { padding: 0.8rem 1.2rem; }
+}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="nav-inner">
+    <span class="nav-brand">PETER MC ALISTER &middot; <strong>The Agentic Harness</strong></span>
+    <ul class="nav-links">
+      <li><a href="#thesis">Thesis</a></li>
+      <li><a href="#first-mile">First Mile</a></li>
+      <li><a href="#coding-session">Coding Session</a></li>
+      <li><a href="#last-mile">Last Mile</a></li>
+      <li><a href="#forced-choice">Forced Choice</a></li>
+      <li><a href="#takeaways">Takeaways</a></li>
+    </ul>
+  </div>
+</nav>
+
+<button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+  <span class="toggle-icon">☀️</span>
+</button>
+
+<div class="page">
+
+<header class="hero" id="thesis">
+  <div class="grid-overlay"></div>
+  <div class="badge"><span class="dot"></span>Engineering essay &middot; 2026</div>
+  <h1>The agentic harness <span class="gradient-text">is</span> the product, not the overhead.</h1>
+  <p class="lead">Where engineering leverage moved when AI started writing the code &mdash; and what a small team built into the 25% of commits that did not ship a feature.</p>
+  <p class="byline"><strong>Peter Mc Alister</strong> &middot; Executive Director, line-of-business engineering &middot; Tier-1 investment bank</p>
+  <div class="hero-stats">
+    <div><span class="stat-num">7</span><span class="stat-label">engineers</span></div>
+    <div><span class="stat-num">6&nbsp;months</span><span class="stat-label">elapsed</span></div>
+    <div><span class="stat-num">26&times;</span><span class="stat-label">LOC growth</span></div>
+    <div><span class="stat-num">25%</span><span class="stat-label">harness commits</span></div>
+  </div>
+</header>
+
+<section class="chapter reveal">
+  <div class="section-label">Part I &middot; The 25%</div>
+  <h2>One commit in four did not ship a feature.</h2>
+  <p>Across six months, a seven-engineer team grew a regulated-FS Python codebase from 1,304 lines to 350,000. Output velocity held at roughly 200 commits per month throughout. The non-obvious detail is the split: one commit in four did not ship a feature. They built the harness around the AI coding agent &mdash; instructions, skills, tools, hooks, and prompts that gave the agent deep codebase understanding and automated quality gates.</p>
+  <div class="callout">
+    <div class="small-label">Thesis</div>
+    <p>That ratio &mdash; one commit in four spent on the harness rather than the product &mdash; <strong>is</strong> the product.</p>
+  </div>
+  <p>The article below explains the two high-leverage zones where engineering teams must focus &mdash; the <strong>first mile</strong> (the harness) and the <strong>last mile</strong> (the guard rails) &mdash; together with the pitfalls, trade-offs, and the forced choice that arrives at the end. The failures are what made the harness work.</p>
+</section>
+
+<hr class="sep">
+
+<section class="chapter reveal">
+  <div class="section-label cyan">Part II &middot; The shift</div>
+  <h2>AI-assisted coding crossed a threshold.</h2>
+  <p>We have moved from humans-write-and-model-suggests to agent-led implementation loops, where the model drives multi-file changes across entire sessions. That shift relocates where engineering leverage actually lives. Historically the biggest productivity gains came from model upgrades &mdash; better model, better output. That mental model is now incomplete and arguably backwards.</p>
+  <table>
+    <thead><tr><th>Was</th><th>Now</th></tr></thead>
+    <tbody>
+      <tr><td>Humans write, model suggests</td><td>Agents drive multi-file changes across whole sessions</td></tr>
+      <tr><td>Leverage from model upgrades</td><td>Leverage from the harness around the model</td></tr>
+      <tr><td>Better model &rarr; better output</td><td>Better harness &rarr; better output, <em>for the same model</em></td></tr>
+    </tbody>
+  </table>
+  <p>Two recent papers reinforce the point independently of our own measurements.</p>
+  <div class="tile-grid">
+    <div class="tile">
+      <h4>Lee et al., 2026</h4>
+      <p>Outer-loop optimisation of harness code beats a state-of-the-art context-management system by <strong>7.7 points</strong>, using a quarter of the context tokens. Stanford / MIT / KRAFTON. <code>arXiv:2603.28052</code></p>
+    </div>
+    <div class="tile">
+      <h4>Lou &amp; Murphy et al., Feb 2026</h4>
+      <p>A synthesised code harness lets a smaller Gemini-Flash outperform Gemini-Pro and GPT-5.2-High on 145 games. Google DeepMind. <code>arXiv:2603.03329</code></p>
+    </div>
+  </div>
+  <blockquote>A well-harnessed small model beats a poorly-harnessed large model. The harness is the control surface that determines whether the agent's throughput becomes production code or expensive rework.</blockquote>
+</section>
+
+<hr class="sep">
+
+<section class="chapter reveal">
+  <div class="section-label violet">Part III &middot; The map</div>
+  <h2>Three zones. One forced choice.</h2>
+  <div class="mermaid-wrap"><div class="mermaid">
+flowchart LR
+    A[First Mile<br/>What must be true<br/>before code generation]
+    B[Coding Session<br/>Context discipline beats<br/>context volume]
+    C[Last Mile<br/>Gates that bounce<br/>bad output back]
+    A --> B --> C
+    style A fill:#1a1c27,color:#e4e6f0,stroke:#3d4167,stroke-width:1.5px
+    style B fill:#1a1c27,color:#e4e6f0,stroke:#3d4167,stroke-width:1.5px
+    style C fill:#1a1c27,color:#e4e6f0,stroke:#3d4167,stroke-width:1.5px
+  </div></div>
+  <p>Three zones of investment. The forced choice arrives at the end of the article: when the agent starts copying anti-patterns from your own code &mdash; and it will &mdash; you either accept the slow, high-effort grind of full-sweep refactors (with some changes regressing on the next pass), or you codify the smell into AST and Vulture gates so the rule stops depending on instructions that decay with context. We will come back to it.</p>
+  <div class="tag-row">
+    <span class="tag cyan">First Mile</span>
+    <span class="tag violet">Coding Session</span>
+    <span class="tag amber">Last Mile</span>
+    <span class="tag rose">Forced choice</span>
+  </div>
+</section>
+
+<hr class="sep">
+
+<section class="chapter reveal" id="first-mile">
+  <div class="section-label">First Mile &middot; &sect;1</div>
+  <h2>Specifications the agent cannot quietly weaken.</h2>
+  <p>The first investment in the first mile is behaviour-first specifications. Define behaviour before implementation, in plain English. BDD-style Gherkin scenarios are harder for agents to reward-hack than unit tests because they encode domain intent in language the agent cannot silently rewrite.</p>
+  <pre><code>Scenario: Application legal entity extraction includes LEI code
+  Given an application legal entity with status "ACTIVE"
+  When the extraction runs
+  Then the output contains the entity's LEI code</code></pre>
+  <p><em>LEI is the Legal Entity Identifier &mdash; the ISO 17442 reference for a legally distinct party, a regulated-FS staple.</em></p>
+  <p>The agent cannot quietly delete that requirement without it being obvious in review. Contrast with a pytest assertion: <code>assert result &gt; 0</code> is trivially weakened to <code>assert result &gt;= 0</code> and the test still passes. BDD scenarios make the intent explicit and the evasion visible.</p>
+</section>
+
+<section class="chapter reveal">
+  <div class="section-label">First Mile &middot; &sect;2</div>
+  <h2>Codified conventions are the agent's menu.</h2>
+  <p>Agent quality depends on discoverable, deterministic conventions &mdash; where to read policy, how to run tools, what to avoid, and how to recover from known failure modes. Our <code>AGENTS.md</code> is always loaded: 9,279 tokens on every request. Expensive in isolation, but consider what it buys: terminal protocol rules that prevent death spirals, tool command references that eliminate guessing, and a skill registration table that acts as a menu. Skills themselves are progressive disclosure done right &mdash; exactly the paradigm that the Model Context Protocol (MCP) got wrong. Fourteen skills cost roughly 700 tokens to advertise; the relevant <code>SKILL.md</code> fires only when triggered, typically 6,000&ndash;12,000 tokens of conventions, templates, and worked examples.</p>
+  <table class="numeric">
+    <thead><tr><th>Asset type</th><th>Files</th><th>Total lines</th><th>Avg / file</th></tr></thead>
+    <tbody>
+      <tr><td>Skills (<code>SKILL.md</code> + bundled assets)</td><td>14</td><td>9,241</td><td>660</td></tr>
+      <tr><td>Glob-activated <code>*.instructions.md</code></td><td>15</td><td>5,361</td><td>357</td></tr>
+      <tr><td>Prompt templates</td><td>10</td><td>3,021</td><td>302</td></tr>
+      <tr><td>Agents</td><td>4</td><td>1,356</td><td>339</td></tr>
+      <tr><td><strong>Markdown collateral subtotal</strong></td><td><strong>43</strong></td><td><strong>18,979</strong></td><td><strong>441</strong></td></tr>
+    </tbody>
+  </table>
+  <p>Beyond the markdown sits the executable layer. The <code>tools/</code> directory holds <strong>10,600 lines of Python over 141 commits</strong> &mdash; the CLI wrappers the agent calls (the pytest, behave, log-search, and validation wrappers) and the orchestration logic for the two-stage pre-commit and pre-push hooks that anchor the last mile. Very nearly half of every harness commit shipped in six months landed in this single directory; the discipline of building reliable tooling between the agent and the terminal earned that share.</p>
+</section>
+
+<section class="chapter reveal">
+  <div class="section-label">First Mile &middot; &sect;3</div>
+  <h2>On-disk plans survive context compaction.</h2>
+  <p>Compaction is inevitable. The model's circular context log discards what it deems less relevant to make room for new context. You cannot avoid this &mdash; you can mitigate the blast radius. The technique comes from Anthropic's long-running agent harness pattern: a two-phase plan where an initialiser agent sets up scaffolding (progress log, task status table, environment state) and the coding agent makes incremental, test-validated progress with interim commits. The plan file lives on disk. Compaction destroys conversation context; the on-disk plan survives.</p>
+  <p>A two-phase plan that actually works includes quality gates at each step, verification loops with confidence levels, state-of-the-world task tracking, debug procedure pointers for when things fail, and environment initialisation procedures to restore context after restarts. Without these the plan is a to-do list. With them it is an engineering control loop.</p>
+  <div class="callout">
+    <div class="small-label">Workload telemetry</div>
+    <p>For our model mix &mdash; Opus 4.6 for planning, GPT-5.3 x-high and Opus 4.6 for coding &mdash; the model forgets sections of the prior conversation reliably between twenty and forty minutes in. The on-disk plan persists as an island of memory through every compaction event.</p>
+  </div>
+</section>
+
+<section class="chapter reveal">
+  <div class="section-label">First Mile &middot; &sect;4</div>
+  <h2>Specificity is shared-context etiquette.</h2>
+  <p>The two-phase plan is the clearest example of a principle that is easy to forget under pressure: do not use a skill when a command will do. Skills trigger on natural language. The word <em>plan</em> in particular is overloaded &mdash; it appears in user prompts, in agent reasoning chains, in commit messages, and in code comments. A team-wide plan skill will fire on most of those, regardless of intent, and every spurious activation costs roughly 6,000&ndash;12,000 tokens of <code>SKILL.md</code> content loaded into the agent's context.</p>
+  <p>That cost is not yours alone. In a shared development environment every developer's context window is finite, and a colleague's session will get the same overload from your skill that yours did. <strong>Specificity is etiquette as well as economy.</strong> Where you know exactly when a procedure is needed &mdash; as you do for plans &mdash; give the operator a slash command and skip the semantic discovery layer. Save skills for the cases where the agent really should pick the right one without being asked.</p>
+</section>
+
+<hr class="sep">
+
+<section class="chapter reveal" id="coding-session">
+  <div class="section-label cyan">Coding Session &middot; &sect;5</div>
+  <h2>CLI wrappers convert terminal flood into signal.</h2>
+  <p>Running <code>poetry run pytest</code> directly dumps roughly 20,000 tokens of raw output into the context window. Our tools framework returns approximately 800 tokens &mdash; a structured one-line summary with a log-file breadcrumb for deeper diagnosis. That is a 96% saving, but the real win is that the agent spends tokens thinking instead of reading.</p>
+  <table class="numeric">
+    <thead><tr><th>Operation</th><th>Inline</th><th>CLI framework</th><th>Savings</th></tr></thead>
+    <tbody>
+      <tr><td>Read log file (5,000 lines)</td><td>~60,000</td><td>~1,000</td><td>98%</td></tr>
+      <tr><td>Run pytest (full output)</td><td>~20,000</td><td>~800</td><td>96%</td></tr>
+      <tr><td>Run behave (full output)</td><td>~40,000</td><td>~1,200</td><td>97%</td></tr>
+      <tr><td>Code validation</td><td>~10,000</td><td>~600</td><td>94%</td></tr>
+    </tbody>
+  </table>
+  <figure>
+    <img src="assets/grep_search_nuance.png" alt="grep_search as the durable feedback channel: structured one-line summaries on stdout, full diagnostics in app.log, the agent diagnoses by grepping the log not by scrolling stdout.">
+    <figcaption>The grep_search nuance &mdash; feedback loop independent of terminal reliability</figcaption>
+  </figure>
+  <p>The detail still lives in <code>app.log</code>, where trained use of the in-built <code>grep_search</code> tool can explore if needed. The agent diagnoses failures by grepping the log rather than scrolling stdout. The feedback loop survives terminal flakiness because it was never dependent on terminal reliability.</p>
+</section>
+
+<section class="chapter reveal">
+  <div class="section-label cyan">Coding Session &middot; &sect;6</div>
+  <h2>Compaction at fifty per cent. Terminal pinned to bash.</h2>
+  <p>Models degrade in a slow linear fashion long before auto-compaction drives performance off a cliff (see Chroma's research at <a href="https://www.trychroma.com/research/context-rot">trychroma.com/research/context-rot</a>). Manual compaction at 50&ndash;70% utilisation gives smarter, less lossy compaction than auto-compaction at the ceiling. You control what gets preserved. Waiting for the limit means the system chooses for you, and badly. A good plan has natural units of work and points of handoff where doing this is least disruptive.</p>
+  <p>PowerShell shell integration in VS Code has a documented fix-regress cycle going back to 2022 &mdash; each monthly release fixes two to four terminal issues and introduces one to three new ones. The <code>chat-terminal</code> label carries 99 open issues and 531 closed (630+ total). Active examples include the agent not waiting for command completion, <code>cmd.exe</code> arguments leaking into PowerShell, and Python <code>venv</code> activation destroying shell integration. Git Bash sidesteps the failure class entirely.</p>
+<pre><code>{
+  "terminal.integrated.defaultProfile.windows": "GitBash",
+  "chat.tools.terminal.terminalProfile.windows": "GitBash",
+  "terminal.integrated.automationProfile.windows": {
+    "path": "bash.exe",
+    "args": ["-l"]
+  }
+}</code></pre>
+  <p>Pin Git Bash as the default and the automation profile, and the terminal becomes a launcher, not the feedback channel; logs and <code>grep_search</code> carry the signal.</p>
+</section>
+
+<hr class="sep">
+
+<section class="chapter reveal" id="last-mile">
+  <div class="section-label amber">Last Mile &middot; &sect;7</div>
+  <h2>How the agent reaches green.</h2>
+  <p>The last mile is iterative. It is a quality gate that rejects bad code and sends the agent back to fix it automatically, until the bar is met. <strong>Rejection is a feature, not a failure.</strong></p>
+  <table>
+    <thead><tr><th>Gate</th><th>What it catches</th><th>Why it matters</th></tr></thead>
+    <tbody>
+      <tr><td>BDD (Behave)</td><td>Business logic violations</td><td>Hardest to silently weaken &mdash; scenarios encode intent in plain English</td></tr>
+      <tr><td>Pytest</td><td>Regressions, unit failures</td><td>Fast feedback, but the model will reward-hack these</td></tr>
+      <tr><td>Ruff</td><td>Formatting, import order, lint</td><td>Auto-fixes most issues; sub-second turnaround</td></tr>
+      <tr><td>Vulture / AST <span style="color:var(--text-muted);font-size:0.85em">(Abstract Semantic Tree)</span></td><td>Dead code, anti-patterns, string interpolation</td><td>Catches patterns the model copies from bad exemplars</td></tr>
+      <tr><td>Agentic review</td><td>Weakened assertions, disabled tests, excessive mocking</td><td>Catches a meaningful share of reward-hacking patterns</td></tr>
+      <tr><td>Human PR review</td><td>Everything else</td><td>Non-negotiable. Always will be.</td></tr>
+    </tbody>
+  </table>
+  <p>Given a failing pytest, the agent has four common paths to a passing run: weaken the assertion (<code>assert result &gt; 0</code> becomes <code>assert result &gt;= 0</code>), mock away the real dependency, restructure the test to avoid the failure path, or delete the test. All four have happened in our codebase. The agent is not behaving maliciously &mdash; it is doing exactly what its training optimises for, which is to drive the feedback signal (green tests) toward success, not the underlying intent (correct code). The literature calls this <em>reward hacking</em>; in practice it looks like a test suite that turns green for the wrong reasons. No single gate is a silver bullet &mdash; the stack works because each layer catches a different class of pattern.</p>
+</section>
+
+<section class="chapter reveal">
+  <div class="section-label amber">Last Mile &middot; &sect;8</div>
+  <h2>Two-stage hook with structured stdout.</h2>
+  <p>Every git commit triggers a two-phase pre-commit hook. Phase 1 (FIX) runs sequential auto-fixes &mdash; root-hygiene, changelog auto-append, and Ruff format-and-check with <code>--fix</code>. If files were modified, the commit exits and asks the developer or agent to re-stage. Phase 2 (VERIFY) runs parallel read-only checks &mdash; Pyright (scoped to staged files, 12.6 seconds), pytest-changed (tests mapped to modified files only, 2.2 seconds), and migration validation. Total wall-clock time dropped from over 200 seconds to roughly 55.</p>
+  <figure>
+    <img src="assets/hook-architecture.png" alt="Two-stage pre-commit hook architecture: Phase 1 FIX runs sequential auto-fixes, Phase 2 VERIFY runs parallel read-only checks.">
+    <figcaption>Two-stage pre-commit hook &middot; Phase 1 FIX &rarr; Phase 2 VERIFY</figcaption>
+  </figure>
+  <p>The key design decision: hooks write structured one-line summaries to stdout and full diagnostics to <code>app.log</code>. The agent diagnoses failures via <code>grep_search</code> on the log file &mdash; a zero-terminal-cost operation. When the IDE's terminal integration breaks, and it breaks often, the feedback loop survives because it was never dependent on terminal reliability. The pre-push hook is manually triggered; we no longer let the agent push.</p>
+</section>
+
+<hr class="sep">
+
+<section class="chapter reveal" id="forced-choice">
+  <div class="section-label rose">The forced choice</div>
+  <h2>Refactor the codebase, or codify the smell.</h2>
+  <p>This is the subtlest failure mode in agentic development, and the one most engineering teams discover only after they have already shipped bad exemplars at scale. Skills, instructions, and the <code>AGENTS.md</code> registry shape the agent's first outputs at session start. Thirty minutes in, the surrounding code in the editor &mdash; the files the agent has just read or just edited &mdash; becomes the exemplar of what <em>good</em> looks like for this codebase. The agent mimics what it sees, not what it was told.</p>
+  <p>A worked example. Early in our codebase a deprecated logging pattern survived a refactor in three files: <code>logger.warning("payload=%s" % payload)</code> instead of <code>logger.warning("payload=%s", payload)</code>. The instructions, both global and glob-activated, told the agent never to use percent-interpolation in log calls. They worked at minute one. By minute thirty-five, once the agent had touched any of the three deprecated files, every new log call it wrote used the same anti-pattern. The instruction had not been forgotten; it had been outweighed.</p>
+  <div class="callout">
+    <div class="small-label">The mechanism</div>
+    <p>The model is making a Bayesian update: in this codebase, percent-interpolation is observed at non-zero frequency, therefore percent-interpolation is permissible. <strong>Every line in your repository is training data for the next session.</strong></p>
+  </div>
+  <div class="mermaid-wrap"><div class="mermaid">
+flowchart TD
+    P[Bad pattern observed in N files]
+    P --> Q{Choose}
+    Q -->|Path A| A[Periodic full-sweep refactor<br/><i>slow, high-effort,<br/>some changes regress</i>]
+    Q -->|Path B| B[Codify the smell into<br/>AST / Vulture gates<br/><i>mechanical enforcement,<br/>does not decay with context</i>]
+    style P fill:#1a1c27,color:#e4e6f0,stroke:#3d4167
+    style Q fill:#e86b8a,color:#0a0b0f,stroke:#e86b8a,stroke-width:2.5px
+    style A fill:#1a1c27,color:#e4e6f0,stroke:#3d4167
+    style B fill:#1a1c27,color:#e4e6f0,stroke:#3d4167
+  </div></div>
+  <p>You either accept the slow, high-effort grind of full-sweep refactors &mdash; knowing that some changes will regress on the next pass and that the discipline lives in your team's calendar, not your tooling &mdash; or you push the rule down into AST and Vulture gates so the smell is mechanically rejected at the gate stack. Instructions decay with context; gates do not. Lint rules and pre-commit gates catch new instances; only gates plus refactor remediate existing ones.</p>
+  <blockquote>The choice is the takeaway. It is not enough to write the right rules &mdash; you have to keep the codebase clean enough for the rules to win on local evidence, or push the rule down into the gate stack so local evidence stops mattering.</blockquote>
+  <p>The discipline this asks of an engineering organisation is significant. That is the part of agentic development that resembles classical engineering management more than it resembles model tuning.</p>
+</section>
+
+<hr class="sep">
+
+<section class="chapter reveal" id="takeaways">
+  <div class="section-label lime">Closing</div>
+  <h2>Six things to take away.</h2>
+  <ul class="takeaways">
+    <li>
+      <div class="t-title">Agents amplify whatever you feed them.</div>
+      <div class="t-body">Invest in the first mile (what you teach) and the last mile (what rejects bad output). The session in between follows.</div>
+    </li>
+    <li>
+      <div class="t-title">Models reward-hack their way to green tests.</div>
+      <div class="t-body">BDD intent is harder to silently weaken than pytest assertions. Agentic review catches some, human review catches more. No single layer is a silver bullet.</div>
+    </li>
+    <li>
+      <div class="t-title">25% harness investment is the product, not overhead.</div>
+      <div class="t-body">When harness commits drop below 20%, delivery velocity drops with them. It is constant hygiene effort &mdash; what some call <em>gardening overhead</em>.</div>
+    </li>
+    <li>
+      <div class="t-title">Every bad pattern in your codebase has a half-life.</div>
+      <div class="t-body">Refactor by hand or codify the smell into AST and Vulture gates. The choice is the takeaway &mdash; instructions decay with context, gates do not.</div>
+    </li>
+    <li>
+      <div class="t-title">Terminal integration is an unreliable dependency.</div>
+      <div class="t-body">Design so the terminal is a launcher, not the feedback channel. Log files and search tools are more resilient than stdout capture.</div>
+    </li>
+    <li>
+      <div class="t-title">CLIs and progressive disclosure beat MCP for local loops.</div>
+      <div class="t-body">Anthropic puts it best: <a href="https://www.anthropic.com/engineering/code-execution-with-mcp">anthropic.com/engineering/code-execution-with-mcp</a>.</div>
+    </li>
+  </ul>
+</section>
+
+<footer class="page-footer">
+  <div class="name">Peter Mc Alister</div>
+  <div class="role">Executive Director &middot; Line-of-business engineering &middot; Tier-1 investment bank</div>
+  <p class="contact">Contact &middot; <a href="mailto:peter.mcalister@cloudfirstsolutions.io">peter.mcalister@cloudfirstsolutions.io</a></p>
+  <p class="contact" style="color: var(--text-muted); font-size: 0.92rem;">First published 2026.</p>
+</footer>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+<script>
+const toggle = document.getElementById('themeToggle');
+const icon = toggle.querySelector('.toggle-icon');
+function setTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  icon.textContent = theme === 'dark' ? '☀️' : '🌙';
+  localStorage.setItem('theme', theme);
+  if (window.mermaid) {
+    initMermaid(theme);
+  }
+}
+function initMermaid(theme) {
+  const dark = theme === 'dark';
+  mermaid.initialize({
+    startOnLoad: false,
+    theme: 'base',
+    themeVariables: {
+      primaryColor: dark ? '#1a1c27' : '#ffffff',
+      primaryTextColor: dark ? '#e4e6f0' : '#1a1c27',
+      primaryBorderColor: dark ? '#3d4167' : '#b8bcd0',
+      lineColor: dark ? '#5b8af5' : '#4a78e0',
+      secondaryColor: dark ? '#222436' : '#e2e4ec',
+      tertiaryColor: dark ? '#12131a' : '#f4f5f8',
+      background: dark ? '#12131a' : '#ffffff',
+      mainBkg: dark ? '#1a1c27' : '#ffffff',
+      nodeBkg: dark ? '#1a1c27' : '#ffffff',
+      nodeBorder: dark ? '#3d4167' : '#b8bcd0',
+      fontFamily: 'DM Sans, sans-serif'
+    }
+  });
+}
+const saved = localStorage.getItem('theme');
+const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+setTheme(saved || (prefersDark ? 'dark' : 'dark'));
+toggle.addEventListener('click', () => {
+  const current = document.documentElement.getAttribute('data-theme');
+  const next = current === 'dark' ? 'light' : 'dark';
+  setTheme(next);
+  document.querySelectorAll('.mermaid').forEach(el => {
+    if (el.dataset.original) el.innerHTML = el.dataset.original;
+    else el.dataset.original = el.innerHTML;
+    delete el.dataset.processed;
+  });
+  setTimeout(() => mermaid.run({ querySelector: '.mermaid' }), 50);
+});
+
+window.addEventListener('load', () => {
+  initMermaid(document.documentElement.getAttribute('data-theme'));
+  document.querySelectorAll('.mermaid').forEach(el => { el.dataset.original = el.innerHTML; });
+  mermaid.run({ querySelector: '.mermaid' });
+});
+
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+
+</body>
+</html>
